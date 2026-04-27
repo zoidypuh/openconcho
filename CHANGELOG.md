@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/offendingcommit/openconcho/compare/v0.1.0...v0.2.0) (2026-04-27)
+
+
+### Features
+
+* **ci:** add cargo-check job with Turborepo + Swatinem cache ([5e05d25](https://github.com/offendingcommit/openconcho/commit/5e05d25b463f079cab6a7d55ca0a4a1dfe85fca7))
+
 # [0.1.0](https://github.com/offendingcommit/openconcho/compare/v0.0.0...v0.1.0) (2026-04-27)
 
 
