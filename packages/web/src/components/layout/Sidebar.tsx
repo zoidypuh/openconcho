@@ -116,7 +116,7 @@ export function Sidebar() {
 				style={{ borderTop: "1px solid var(--border)" }}
 			>
 				<p className="text-xs font-mono hidden sm:block" style={{ color: "var(--text-4)" }}>
-					API v3
+					v{__APP_VERSION__}
 				</p>
 				<div className="flex items-center gap-1.5 mx-auto sm:mx-0">
 					<button

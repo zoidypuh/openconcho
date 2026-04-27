@@ -1,16 +1,23 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { readFileSync } from "node:fs";
 import tailwindcss from "@tailwindcss/vite";
-import { fileURLToPath } from "url";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import react from "@vitejs/plugin-react";
 import path from "path";
+import { fileURLToPath } from "url";
+import { defineConfig } from "vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const host = process.env.TAURI_DEV_HOST;
+const { version } = JSON.parse(
+	readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"),
+) as { version: string };
 
 export default defineConfig({
 	clearScreen: false,
 	plugins: [tanstackRouter({ autoCodeSplitting: true }), react(), tailwindcss()],
+	define: {
+		__APP_VERSION__: JSON.stringify(version),
+	},
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
