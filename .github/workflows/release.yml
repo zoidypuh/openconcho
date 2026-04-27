@@ -53,14 +53,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG=${{ github.event.inputs.tag || github.ref_name }}
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
           RELEASE_ID=$(gh release view "$TAG" --json databaseId --jq '.databaseId')
-          echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
+          echo "release_id=$RELEASE_ID" >> "$GITHUB_OUTPUT"
 
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           releaseId: ${{ steps.get-release.outputs.release_id }}
-          beforeBuildCommand: pnpm turbo build --filter=@openconcho/web
+          tauriScript: pnpm turbo run tauri --filter=@openconcho/desktop --
           args: --target ${{ matrix.target }}
