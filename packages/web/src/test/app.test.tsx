@@ -1,14 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-	createMemoryHistory,
-	createRouter,
-	RouterProvider,
-} from "@tanstack/react-router";
-import { routeTree } from "@/routeTree.gen";
+import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import { DemoProvider } from "@/context/DemoContext";
 import { useDemo } from "@/hooks/useDemo";
+import { routeTree } from "@/routeTree.gen";
 
 function renderAt(initialPath: string) {
 	const router = createRouter({
