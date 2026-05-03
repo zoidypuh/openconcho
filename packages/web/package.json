@@ -43,7 +43,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@playwright/test": "^1.59.1",
+		"@playwright/test": "catalog:",
 		"@tanstack/router-plugin": "^1.120.3",
 		"@testing-library/jest-dom": "catalog:",
 		"@testing-library/react": "catalog:",
