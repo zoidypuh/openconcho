@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/offendingcommit/openconcho/compare/v0.5.3...v0.6.0) (2026-05-04)
+
+
+### Features
+
+* support multiple Honcho instances (closes [#2](https://github.com/offendingcommit/openconcho/issues/2)) ([f706c83](https://github.com/offendingcommit/openconcho/commit/f706c83cc15bd35a7222938c580189f710098e2c))
+
 ## [0.5.3](https://github.com/offendingcommit/openconcho/compare/v0.5.2...v0.5.3) (2026-05-03)
 
 
