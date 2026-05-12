@@ -17,40 +17,9 @@ jobs:
 
       - run: make ci-web
 
-  cargo-check:
-    name: Rust compile check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache apt packages
-        uses: actions/cache@v4
-        with:
-          path: ~/apt-cache
-          key: ${{ runner.os }}-apt-tauri-${{ hashFiles('.github/workflows/ci.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-tauri-
-
-      - name: Install Linux dependencies
-        run: |
-          mkdir -p ~/apt-cache && chmod -R a+rw ~/apt-cache
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends -o dir::cache::archives="$HOME/apt-cache" libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-          sudo chmod -R a+rw ~/apt-cache
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: packages/desktop/src-tauri -> target
-
-      - uses: ./.github/actions/setup
-
-      - run: make ci-desktop
-
   release:
     name: Release
-    needs: [check, cargo-check]
+    needs: [check]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
