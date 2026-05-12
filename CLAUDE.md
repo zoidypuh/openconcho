@@ -17,6 +17,7 @@ Frontend UI for self-hosted Honcho instances — browse memories, peers, session
 | `make test` | Vitest (unit + integration), excludes `e2e/` |
 | `make test-e2e` | Playwright e2e (uncached) |
 | `make check` | lint + typecheck + test |
+| `pnpm --filter @openconcho/desktop cargo-check` | Local Rust/Tauri compile check before pushing desktop changes |
 | `pnpm --filter @openconcho/web generate:api` | Regen `src/api/schema.d.ts` from `openapi.json` |
 
 ## Structure
@@ -58,3 +59,4 @@ Read `docs/architecture.md` for component overview, data flow, and design decisi
 - **Conventional commits enforced** — commitlint runs in husky `commit-msg`; body lines must be ≤100 chars
 - **Releases via semantic-release** — `.releaserc.json`; commits land on `main`, no manual version bumps
 - **GitHub account** — push under `offendingcommit` (`gh auth switch` if needed)
+- **Desktop preflight is local** — Rust/Tauri compile-check no longer runs in PR CI; run `pnpm --filter @openconcho/desktop cargo-check` before pushing any `packages/desktop/**` or `packages/desktop/src-tauri/**` change
