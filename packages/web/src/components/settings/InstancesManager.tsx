@@ -1,14 +1,18 @@
 import { motion } from "framer-motion";
-import { Check, Pencil, Plus, Server, Trash2 } from "lucide-react";
+import { Check, ChevronRight, Cloud, Pencil, Plus, Server, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { SettingsForm } from "@/components/settings/SettingsForm";
+import { type ConnectionPreset, SettingsForm } from "@/components/settings/SettingsForm";
 import { Button } from "@/components/ui/button";
 import { Muted } from "@/components/ui/typography";
 import { useInstances } from "@/hooks/useInstances";
-import type { Instance } from "@/lib/config";
+import { HONCHO_CLOUD_URL, type Instance, isCloudInstance } from "@/lib/config";
 import { COLOR } from "@/lib/constants";
 
-type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; id: string };
+type Mode =
+	| { kind: "list" }
+	| { kind: "choose-type" }
+	| { kind: "create"; preset: ConnectionPreset }
+	| { kind: "edit"; id: string };
 
 interface InstancesManagerProps {
 	onActivated?: () => void;
@@ -16,18 +20,32 @@ interface InstancesManagerProps {
 
 export function InstancesManager({ onActivated }: InstancesManagerProps) {
 	const { instances, activeId, activate, remove } = useInstances();
-	const [mode, setMode] = useState<Mode>({ kind: "list" });
+	const isFirstRun = instances.length === 0;
+	const [mode, setMode] = useState<Mode>(isFirstRun ? { kind: "choose-type" } : { kind: "list" });
+
+	const backFromCreate = () => setMode(isFirstRun ? { kind: "choose-type" } : { kind: "list" });
+
+	if (mode.kind === "choose-type") {
+		return (
+			<ConnectionTypeChooser
+				onPick={(preset) => setMode({ kind: "create", preset })}
+				onCancel={isFirstRun ? undefined : () => setMode({ kind: "list" })}
+			/>
+		);
+	}
 
 	if (mode.kind === "create") {
 		return (
 			<SettingsForm
 				instance={null}
+				preset={mode.preset}
 				onSaved={() => {
 					setMode({ kind: "list" });
 					onActivated?.();
 				}}
-				onCancel={instances.length > 0 ? () => setMode({ kind: "list" }) : undefined}
-				hideCancel={instances.length === 0}
+				onCancel={backFromCreate}
+				hideCancel={false}
+				submitLabel={isFirstRun ? "Save Connection" : undefined}
 			/>
 		);
 	}
@@ -40,17 +58,6 @@ export function InstancesManager({ onActivated }: InstancesManagerProps) {
 				instance={target}
 				onSaved={() => setMode({ kind: "list" })}
 				onCancel={() => setMode({ kind: "list" })}
-			/>
-		);
-	}
-
-	if (instances.length === 0) {
-		return (
-			<SettingsForm
-				instance={null}
-				onSaved={() => onActivated?.()}
-				hideCancel
-				submitLabel="Save Connection"
 			/>
 		);
 	}
@@ -76,13 +83,116 @@ export function InstancesManager({ onActivated }: InstancesManagerProps) {
 			<Button
 				type="button"
 				variant="ghost"
-				onClick={() => setMode({ kind: "create" })}
+				onClick={() => setMode({ kind: "choose-type" })}
 				className="w-full py-2.5 px-4 rounded-xl flex items-center justify-center gap-2"
 			>
 				<Plus className="w-4 h-4" strokeWidth={1.5} />
 				Add another instance
 			</Button>
 		</div>
+	);
+}
+
+interface ConnectionTypeChooserProps {
+	onPick: (preset: ConnectionPreset) => void;
+	onCancel?: () => void;
+}
+
+function ConnectionTypeChooser({ onPick, onCancel }: ConnectionTypeChooserProps) {
+	return (
+		<div
+			className="rounded-2xl p-6 space-y-3"
+			style={{
+				background: "var(--bg-2)",
+				border: "1px solid var(--border)",
+			}}
+		>
+			<div className="mb-2">
+				<h2 className="text-base font-medium" style={{ color: "var(--text-1)" }}>
+					How do you want to connect?
+				</h2>
+				<Muted className="text-xs mt-1">
+					You can add more connections later — Cloud, self-hosted, or both.
+				</Muted>
+			</div>
+
+			<ConnectionTypeButton
+				icon={Cloud}
+				title="Honcho Cloud"
+				description={`Hosted at ${HONCHO_CLOUD_URL.replace(/^https?:\/\//, "")} — sign in with your API key`}
+				accent
+				onClick={() => onPick("cloud")}
+			/>
+
+			<ConnectionTypeButton
+				icon={Server}
+				title="Self-Hosted"
+				description="Connect to your own Honcho deployment"
+				onClick={() => onPick("self-hosted")}
+			/>
+
+			{onCancel && (
+				<div className="pt-1">
+					<Button
+						type="button"
+						variant="ghost"
+						onClick={onCancel}
+						className="w-full py-2 px-4 rounded-xl"
+					>
+						Cancel
+					</Button>
+				</div>
+			)}
+		</div>
+	);
+}
+
+interface ConnectionTypeButtonProps {
+	icon: typeof Cloud;
+	title: string;
+	description: string;
+	accent?: boolean;
+	onClick: () => void;
+}
+
+function ConnectionTypeButton({
+	icon: Icon,
+	title,
+	description,
+	accent,
+	onClick,
+}: ConnectionTypeButtonProps) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className="w-full rounded-xl p-4 flex items-center gap-3 text-left transition-colors"
+			style={{
+				background: "var(--surface)",
+				border: `1px solid ${accent ? "var(--accent-border)" : "var(--border)"}`,
+			}}
+		>
+			<div
+				className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+				style={{
+					background: accent ? "var(--accent)" : "var(--bg-2)",
+					color: accent ? "white" : "var(--text-2)",
+				}}
+			>
+				<Icon className="w-5 h-5" strokeWidth={1.5} />
+			</div>
+			<div className="min-w-0 flex-1">
+				<p className="text-sm font-medium" style={{ color: "var(--text-1)" }}>
+					{title}
+				</p>
+				<Muted className="text-xs mt-0.5">{description}</Muted>
+			</div>
+			<ChevronRight
+				className="w-4 h-4 shrink-0"
+				style={{ color: "var(--text-3)" }}
+				strokeWidth={1.5}
+			/>
+		</button>
 	);
 }
 
@@ -96,6 +206,7 @@ interface InstanceRowProps {
 
 function InstanceRow({ instance, active, onActivate, onEdit, onDelete }: InstanceRowProps) {
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
+	const cloud = isCloudInstance(instance);
 
 	return (
 		<motion.div
@@ -122,6 +233,8 @@ function InstanceRow({ instance, active, onActivate, onEdit, onDelete }: Instanc
 				>
 					{active ? (
 						<Check className="w-4 h-4" strokeWidth={2} />
+					) : cloud ? (
+						<Cloud className="w-4 h-4" strokeWidth={1.5} />
 					) : (
 						<Server className="w-4 h-4" strokeWidth={1.5} />
 					)}
@@ -134,7 +247,7 @@ function InstanceRow({ instance, active, onActivate, onEdit, onDelete }: Instanc
 						{instance.name}
 					</p>
 					<Muted className="text-xs font-mono truncate">
-						{instance.baseUrl.replace(/^https?:\/\//, "")}
+						{cloud ? "Honcho Cloud" : instance.baseUrl.replace(/^https?:\/\//, "")}
 					</Muted>
 				</div>
 			</button>
