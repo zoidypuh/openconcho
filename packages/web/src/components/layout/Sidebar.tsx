@@ -18,6 +18,7 @@ import { useDemo } from "@/hooks/useDemo";
 import { useHealthStatus } from "@/hooks/useHealthStatus";
 import { useInstances } from "@/hooks/useInstances";
 import { useTheme } from "@/hooks/useTheme";
+import type { HealthStatus } from "@/lib/config";
 import { COLOR } from "@/lib/constants";
 
 const navItems = [
@@ -26,12 +27,65 @@ const navItems = [
 	{ to: "/settings" as const, label: "Settings", icon: Settings, exact: false },
 ];
 
+const healthLabels: Record<HealthStatus, string> = {
+	ok: "Reachable",
+	"auth-required": "Reachable, auth needed",
+	unreachable: "Not reachable",
+	checking: "Checking",
+};
+
+const healthColors: Record<HealthStatus, string> = {
+	ok: COLOR.success,
+	"auth-required": COLOR.warning,
+	unreachable: COLOR.destructive,
+	checking: COLOR.accentText,
+};
+
+function formatLastChecked(timestamp: number): string {
+	if (!timestamp) return "No check yet";
+	return `Checked ${new Date(timestamp).toLocaleTimeString([], {
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+	})}`;
+}
+
+function SidebarHealthStatus({
+	status,
+	message,
+	checkedAt,
+	isFetching,
+}: {
+	status: HealthStatus | undefined;
+	message?: string;
+	checkedAt: number;
+	isFetching: boolean;
+}) {
+	const displayStatus = status ?? (isFetching ? "checking" : undefined);
+	const label = displayStatus ? healthLabels[displayStatus] : "Unknown";
+	const color = displayStatus ? healthColors[displayStatus] : "var(--text-4)";
+	const checked = isFetching && !checkedAt ? "Checking now" : formatLastChecked(checkedAt);
+	const title = message ? `${label} - ${message}. ${checked}` : `${label}. ${checked}`;
+
+	return (
+		<div className="mt-1.5 space-y-0.5" title={title}>
+			<p className="text-[10px] font-medium truncate" style={{ color }}>
+				{label}
+			</p>
+			<p className="text-[10px] font-mono truncate" style={{ color: "var(--text-4)" }}>
+				{checked}
+			</p>
+		</div>
+	);
+}
+
 export function Sidebar() {
 	const matchRoute = useMatchRoute();
 	const { instances, active, activate } = useInstances();
 	const { theme, toggle } = useTheme();
 	const { demo, toggle: toggleDemo, mask } = useDemo();
-	const { data: health } = useHealthStatus();
+	const { data: health, dataUpdatedAt, isFetching: healthFetching } = useHealthStatus();
+	const displayHealthStatus = health?.status ?? (healthFetching ? "checking" : undefined);
 	const [switcherOpen, setSwitcherOpen] = useState(false);
 	const switcherRef = useRef<HTMLDivElement | null>(null);
 
@@ -94,12 +148,18 @@ export function Sidebar() {
 									className="text-xs font-medium truncate flex items-center gap-1.5"
 									style={{ color: "var(--text-2)" }}
 								>
-									<HealthDot status={health?.status} message={health?.message} />
+									<HealthDot status={displayHealthStatus} message={health?.message} />
 									<span className="truncate">{active.name}</span>
 								</p>
 								<p className="text-xs font-mono truncate" style={{ color: "var(--text-4)" }}>
 									{mask(active.baseUrl.replace(/^https?:\/\//, ""))}
 								</p>
+								<SidebarHealthStatus
+									status={displayHealthStatus}
+									message={health?.message}
+									checkedAt={dataUpdatedAt}
+									isFetching={healthFetching}
+								/>
 							</div>
 							{instances.length > 1 && (
 								<ChevronsUpDown

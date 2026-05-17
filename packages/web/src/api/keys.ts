@@ -15,8 +15,8 @@ export const QK = {
 
 	sessions: (wsId: string, page: number, size: number) => ["sessions", wsId, page, size] as const,
 	session: (wsId: string, sId: string) => ["session", wsId, sId] as const,
-	sessionMessages: (wsId: string, sId: string, page: number, size: number) =>
-		["session-messages", wsId, sId, page, size] as const,
+	sessionMessages: (wsId: string, sId: string, page: number, size: number, reverse: boolean) =>
+		["session-messages", wsId, sId, page, size, reverse] as const,
 	sessionSummaries: (wsId: string, sId: string) => ["session-summaries", wsId, sId] as const,
 	sessionContext: (wsId: string, sId: string) => ["session-context", wsId, sId] as const,
 	sessionPeers: (wsId: string, sId: string) => ["session-peers", wsId, sId] as const,

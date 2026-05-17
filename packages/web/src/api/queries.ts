@@ -373,16 +373,17 @@ export function useSessionMessages(
 	sessionId: string,
 	page = 1,
 	pageSize = 50,
+	reverse = true,
 ) {
 	return useQuery({
-		queryKey: QK.sessionMessages(workspaceId, sessionId, page, pageSize),
+		queryKey: QK.sessionMessages(workspaceId, sessionId, page, pageSize, reverse),
 		queryFn: async () => {
 			const { data, error } = await client.current.POST(
 				"/v3/workspaces/{workspace_id}/sessions/{session_id}/messages/list",
 				{
 					params: {
 						path: { workspace_id: workspaceId, session_id: sessionId },
-						query: { page, page_size: pageSize },
+						query: { page, size: pageSize, reverse },
 					},
 					body: {},
 				},

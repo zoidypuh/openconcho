@@ -446,8 +446,16 @@ function SummaryCard({ label, summary }: { label: string; summary: Summary }) {
 
 function SummariesDisplay({ summaries }: { summaries: unknown }) {
 	const data = summaries as SessionSummaries | null | undefined;
+	const summaryItems = [
+		data?.short_summary ? { label: "Short summary", summary: data.short_summary } : null,
+		data?.long_summary ? { label: "Long summary", summary: data.long_summary } : null,
+	]
+		.filter((item): item is { label: string; summary: Summary } => Boolean(item))
+		.sort((a, b) => {
+			return new Date(b.summary.created_at).getTime() - new Date(a.summary.created_at).getTime();
+		});
 
-	if (!data || (!data.short_summary && !data.long_summary)) {
+	if (summaryItems.length === 0) {
 		return (
 			<>
 				<SectionHeading>Session Summaries</SectionHeading>
@@ -460,8 +468,9 @@ function SummariesDisplay({ summaries }: { summaries: unknown }) {
 		<>
 			<SectionHeading>Session Summaries</SectionHeading>
 			<div className="space-y-3">
-				{data.short_summary && <SummaryCard label="Short summary" summary={data.short_summary} />}
-				{data.long_summary && <SummaryCard label="Long summary" summary={data.long_summary} />}
+				{summaryItems.map(({ label, summary }) => (
+					<SummaryCard key={summary.summary_type} label={label} summary={summary} />
+				))}
 			</div>
 		</>
 	);

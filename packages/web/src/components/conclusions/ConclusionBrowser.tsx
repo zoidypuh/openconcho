@@ -89,7 +89,9 @@ export function ConclusionBrowser() {
 
 	const displayedConclusions: Conclusion[] = activeSearch
 		? Array.isArray(searchResults)
-			? searchResults
+			? [...searchResults].sort(
+					(a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+				)
 			: []
 		: sortedConclusions;
 
